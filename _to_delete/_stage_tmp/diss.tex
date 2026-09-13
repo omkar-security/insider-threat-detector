@@ -1,0 +1,636 @@
+\documentclass[10pt,a4paper]{article}
+
+% ---- Fonts / typography (ACM single-column, 10pt look) ------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{mathpazo}                 % Palatino-family serif
+\usepackage[scaled=0.90]{helvet}      % sans for headings/captions
+\usepackage{microtype}
+
+% ---- No end-of-line hyphenation -----------------------------------
+\usepackage[none]{hyphenat}
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\tolerance=2000
+\emergencystretch=3.5em
+
+% ---- Geometry: dense single column on A4 --------------------------
+\usepackage[a4paper,top=2.0cm,bottom=2.2cm,left=1.9cm,right=1.9cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multicol}
+\setlength{\columnsep}{14pt}
+% ---- Full-width table column types --------------------------------
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+\renewcommand{\arraystretch}{1.45}
+\setlength{\tabcolsep}{8pt}
+\setlength{\aboverulesep}{0.55ex}
+\setlength{\belowrulesep}{0.55ex}
+
+% ---- Algorithm counter (independent of the table counter) ----------
+\newcounter{algo}
+\renewcommand{\thealgo}{\arabic{algo}}
+
+% ---- Float packing: allow floats to share pages with text ----------
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{5}
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.80}
+\renewcommand{\textfraction}{0.06}
+\renewcommand{\floatpagefraction}{0.85}
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\floatsep}{9pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{pifont}
+\usepackage{xcolor}
+\definecolor{acmblue}{HTML}{1B4F72}
+\definecolor{boxgrey}{HTML}{F2F4F5}
+\usepackage[font=footnotesize,labelfont=bf,labelsep=period,skip=4pt]{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\setlist{noitemsep,topsep=2pt,leftmargin=1.4em}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{mdframed}
+\usepackage[hidelinks,colorlinks=true,linkcolor=acmblue,citecolor=acmblue,urlcolor=acmblue]{hyperref}
+
+% ---- Section styling (ACM-like numbered bold headings) ------------
+\titleformat{\section}{\normalfont\bfseries\large\scshape\color{acmblue}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\normalfont\bfseries\normalsize}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalfont\bfseries\small\itshape}{\thesubsubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{10pt}{4pt}
+\titlespacing*{\subsection}{0pt}{7pt}{3pt}
+\titlespacing*{\subsubsection}{0pt}{5pt}{2pt}
+
+\setlength{\parindent}{1.1em}
+\setlength{\parskip}{0pt}
+\linespread{1.03}
+
+% ---- Header / footer ----------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.3pt}
+\fancyhead[L]{\footnotesize\itshape Privacy-Preserving Audit Log Analysis for Insider Threat Detection}
+\fancyhead[R]{\footnotesize CSC8209}
+\fancyfoot[C]{\footnotesize\thepage}
+
+% ---- Title block ---------------------------------------------------
+\usepackage{titling}
+\setlength{\droptitle}{-2.6em}
+\title{\vspace{-1.0em}\bfseries\LARGE Privacy-Preserving Audit Log Analysis for\\ Insider Threat Detection in Financial Institutions\vspace{-0.2em}}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\vspace{-3.2em}
+\begin{center}
+{\footnotesize Omkar Kamble (C5056117) \quad$\cdot$\quad MSc Cyber Security, Newcastle University \quad$\cdot$\quad Supervisor: Dr Amy Nejati \quad$\cdot$\quad CSC8209}\\[1pt]
+\end{center}
+\vspace{0.1em}
+
+% ---- Abstract ------------------------------------------------------
+\noindent\rule{\linewidth}{0.4pt}
+\begin{center}\textbf{\small ABSTRACT}\end{center}
+\vspace{-0.3em}
+{\small\noindent
+Financial institutions rely on detailed audit logs to detect malicious insiders, yet those same logs are a persistent, identifiable record of the everyday behaviour of thousands of innocent employees, which sits uneasily with the data minimisation and storage limitation obligations of the GDPR. This dissertation asks a specific and answerable question: at what level of anonymisation does an audit log become defensible under the GDPR, and what does that privacy cost in detection performance? We design and implement a system that first establishes a raw-data detection ceiling using an Isolation Forest over behavioural features, then applies a formally verified $k$-anonymity generalisation module to four quasi-identifiers, namely identity, timestamp, resource and action, at $k \in \{2,5,10,20\}$, re-running detection on each anonymised view. On a purpose-built synthetic UK financial-sector dataset of 500 employees, 25 malicious insiders and $850{,}853$ log events, the raw baseline attains an F1 of $0.88$ and an AUC of $0.995$. Under anonymisation, ranking quality proves remarkably robust, remaining above $0.95$ AUC even at $k=20$, while thresholded F1 degrades gracefully to $0.72$. We show that $k=10$ is the practical sweet spot, since every record is then indistinguishable from at least nine others at only $5.4\%$ information loss and no measurable loss of F1 relative to $k=5$, and we map each configuration to the GDPR articles it satisfies. The central finding is that strong, provable anonymity and effective insider-threat detection are not mutually exclusive: the tension is real but quantifiable, and at moderate $k$ comfortably manageable.}
+\vspace{0.4em}
+\noindent\rule{\linewidth}{0.4pt}
+
+% ===================================================================
+\section{Introduction, Rationale and Objectives}
+% ===================================================================
+
+\subsection{Problem and motivation}
+Insider threats are security incidents caused by employees or contractors who deliberately misuse legitimate system access to steal data, commit fraud, or cause harm, and they are among the most damaging and hardest to detect risks facing financial institutions. Unlike an external intrusion, malicious insider activity is generated by a principal who is already authenticated and already authorised, so it frequently looks indistinguishable from ordinary work \cite{homoliak2019,salem2008}. Industry studies consistently report that insider incidents take longer to contain than external ones and carry some of the highest per-incident remediation costs of any threat category. In the financial sector the consequences are especially acute, spanning regulatory penalties under the GDPR and the Financial Conduct Authority (FCA) framework, direct loss through fraud or data theft, and reputational damage that can outlast the incident by years. The distinctive difficulty of the insider case is the base-rate problem: in a workforce of thousands the malicious few are vastly outnumbered by benign staff whose legitimate work can look superficially similar, so a detector that is even slightly trigger-happy drowns analysts in false alarms, while one that is too conservative misses the incidents it exists to catch. That asymmetry is why this work reports ranking quality and full confusion counts rather than a single accuracy figure the class imbalance would render meaningless.
+
+The primary technical mechanism for detecting such behaviour is the \emph{audit log}: a continuous, automated record of employee actions spanning logon and logoff events, file access and transfer, email metadata, removable-media (USB) usage, and web activity. These logs are indispensable for anomaly detection and for the forensic reconstruction of an incident after the fact. However, the very property that makes them useful, namely completeness, also makes them a privacy liability. An audit log is, by construction, a granular and persistent record of everything every employee does throughout the working day, and the overwhelming majority of the people it records are doing nothing wrong.
+
+This creates a genuine and presently unresolved legal and ethical conflict. Under the GDPR, in particular Article~5(1)(c) on data minimisation, Article~5(1)(e) on storage limitation and Article~25 on data protection by design, personal data must be adequate, relevant and limited to what is necessary, retained no longer than needed, and protected by appropriate technical measures from the outset \cite{voigt2017}. Storing identifiable behavioural logs on an entire workforce indefinitely, on the off-chance that a handful are malicious, is difficult to reconcile with these principles. Organisations therefore face a dilemma they cannot presently resolve in a validated, practical way: they must monitor for insider threats, but doing so entails recording the private activity of thousands of innocent staff.
+
+\subsection{The privacy and security conflict in workplace monitoring}
+It is tempting to treat this as a purely legal problem to be solved with policy and consent forms, but the tension is fundamentally technical. Effective detection wants \emph{more} data: finer timestamps, exact resource names, precise identities and long retention, because subtle malicious patterns emerge only against a rich behavioural background. Privacy law wants \emph{less}: coarser data, shorter retention and the removal of anything not strictly necessary. The two objectives pull the same design levers in opposite directions, and existing practice resolves the conflict in favour of security, retaining everything and relying on access controls rather than data reduction. That leaves the residual risk intact, since a breach, an over-broad query or a change of purpose can expose the complete behavioural history of every employee. A technical middle path, reducing data to the point where re-identification is provably hard yet detection still works, has not been systematically characterised for this domain, and providing that characterisation is the purpose of this dissertation.
+
+\subsection{Research question and aim}
+The work is framed by one concrete research question:
+
+\begin{quote}\itshape
+At what level of anonymisation does privacy become satisfactory under the GDPR, and what is the corresponding cost to insider-threat detection performance?
+\end{quote}
+
+\noindent\textbf{Aim.} To design, implement and evaluate a privacy-preserving audit log anonymisation system that satisfies GDPR data minimisation principles while retaining sufficient utility for insider-threat detection in financial-sector environments.
+
+\subsection{Objectives and measures of success}
+\label{sec:objectives}
+Answering the research question requires two numbers that do not currently exist in the literature for this domain: a credible measure of how well insider detection works on raw audit logs, and the same measure recomputed after the logs have been anonymised to a \emph{provable} standard. The aim is therefore decomposed into five sequential SMART objectives, each supplying the input the next consumes. O1 establishes what is known and where the gap lies; O2 fixes the reference point against which every privacy configuration is compared; O3 builds the privacy mechanism; O4 combines the two into the tradeoff that is the central empirical result; and O5 translates that result into the regulatory language a compliance function works in. Each carries an explicit, falsifiable success measure, stated below with the reasoning behind it, so the project can be judged against a stated bar rather than an impression.
+
+\begin{description}[leftmargin=1.6em,style=nextline]
+\item[O1, Literature review.] Systematically review insider-threat detection, $k$-anonymity and related privacy-enhancing techniques, and GDPR employee-monitoring requirements, in order to justify the choice of detector and privacy model rather than assume them. \textit{Measure:} at least 15 peer-reviewed sources synthesised into an explicitly stated research gap. \textit{Rationale:} the gap claim is the premise of the whole project, so it must rest on a systematic rather than a selective reading.
+\item[O2, Baseline detection pipeline.] Construct a suitable dataset and implement unsupervised anomaly detection on raw, fully identified logs, establishing the performance ceiling that anonymisation can only degrade. \textit{Measure:} a working baseline achieving F1 $\ge 0.75$ with documented precision, recall and AUC-ROC. \textit{Rationale:} $0.75$ is demanding enough to show the detector genuinely works, so that any later degradation is attributable to anonymisation and not to a weak starting point.
+\item[O3, Anonymisation system.] Implement a $k$-anonymity generalisation and suppression module over the four quasi-identifiers, namely identity, timestamp, resource and action, at $k\in\{2,5,10,20\}$. \textit{Measure:} the achieved $k$ independently verified in code at all four configurations. \textit{Rationale:} the privacy claim must be \emph{proven} on the released data, not asserted by the component that produced it; the four values span weak to strong anonymity on a roughly logarithmic scale.
+\item[O4, Privacy and utility tradeoff.] Re-run detection using only anonymised columns at each $k$ and measure detection performance and information loss on the same pipeline. \textit{Measure:} a quantitative tradeoff curve terminating in a single recommended deployment configuration. \textit{Rationale:} this is the objective that answers the research question; re-detecting on the anonymised view, rather than scoring the anonymisation in isolation, is what makes the measurement operationally meaningful.
+\item[O5, GDPR compliance assessment.] Map the system's properties at each $k$ onto specific GDPR articles, stating where each configuration does and does not satisfy them. \textit{Measure:} a structured, article-by-article compliance analysis covering every configuration. \textit{Rationale:} a tradeoff curve alone does not tell a firm what $k$ to choose; converting $k$ into a documented regulatory posture is what makes the result actionable.
+\end{description}
+
+\noindent All five objectives were met in full. Section~\ref{sec:results} reports the outcomes for O2 to O4 against the measures above, Section~\ref{sec:gdpr} discharges O5, and Section~\ref{sec:litreview} discharges O1.
+
+\subsection{Scope and threat model}
+The project scope is deliberately bounded so that its claims are defensible. The adversary of interest is the \emph{malicious insider}: an authorised employee who exfiltrates sensitive data through file copies, email, removable media or web uploads. Negligent and compromised insiders are acknowledged but not the primary target, since their signatures differ. On the privacy side, the adversary is a party with access to the anonymised log who attempts to \emph{re-identify} an individual by linking quasi-identifiers to external knowledge. The protection goal is therefore to bound identity disclosure, which is exactly what $k$-anonymity formalises. The system operates on data \emph{at rest} for analysis, rather than in real time, which matches how forensic and periodic insider-risk reviews are conducted in practice. Detection is performed per employee over an analysis window rather than per event, because insider risk is a behavioural pattern over time, not a single action.
+
+\subsection{Contributions}
+This dissertation makes four contributions: a \emph{constructive artefact}, an end-to-end reproducible pipeline that anonymises financial audit logs and re-runs detection on the anonymised data, with an interactive tool for exploring the result; an \emph{empirical tradeoff characterisation}, the first quantitative privacy and utility curve for $k$-anonymised insider detection over a financial-sector audit log; a \emph{GDPR mapping} tying each $k$ to the articles it does and does not satisfy; and a \emph{reproducible dataset generator} embedding subtle insiders and legitimate-outlier personas so the tradeoff is non-trivial rather than saturated.
+
+\subsection{CyBOK alignment}
+\label{sec:cybok}
+The project maps onto three knowledge areas of the Cyber Security Body of Knowledge (CyBOK v1.1). \emph{Adversarial Behaviours} (AB) covers the insider-threat detection component, specifically the taxonomy of malicious insider actors and log-based behavioural detection methods, which supply the threat model of Section~1.5 and the detector of Section~3.6. \emph{Privacy and Online Rights} (POR) covers the core technical contribution, namely the application of $k$-anonymity and related privacy-enhancing technologies to audit-log data and the assessment of GDPR data-minimisation compliance, developed in Sections~3.7 and~\ref{sec:gdpr}. \emph{Authentication, Authorisation and Accountability} (AAA) is engaged because audit logs are the primary accountability mechanism in enterprise systems, so the question of how much forensic and detective utility survives anonymisation maps directly onto AAA's treatment of audit and logging. The central research question, namely how to satisfy GDPR obligations (POR) while maintaining insider-threat detection capability (AB) through privacy-preserving audit-log design (AAA), sits deliberately at the intersection of these three areas, and the contribution is precisely the interface between them rather than a deeper result within any one.
+
+\subsection{Ethical, legal and professional considerations}
+The project is privacy-motivated, but a monitoring tool is inherently dual-use, and this shaped its design. No human participants are involved and all experiments use a fully synthetic dataset containing no real personal data, so the direct ethical risk is low and ethics approval was obtained through NESS. Two broader considerations were addressed in the design itself. The first is the dual-use risk that a system anonymising monitoring data could legitimise more invasive surveillance under a veneer of compliance, mitigated through the GDPR assessment of Section~\ref{sec:gdpr}, which identifies where even anonymised monitoring may exceed lawful processing limits. The second, following Cavoukian \cite{cavoukian2011}, is that privacy is embedded architecturally, so the anonymisation module is the primary contribution rather than a bolt-on. Professionally, the work follows the BCS Code of Conduct's duty to have regard to the legitimate rights of third parties, here the monitored employees; legally, it is framed by the GDPR and by the FCA's record-keeping expectations, which require robust monitoring but do not license disproportionate processing.
+
+The remainder is organised as follows. Section~2 reviews the two research streams; Section~3 sets out the methodology, architecture and pipeline; Section~4 reports the dataset, baseline, $k$-anonymity verification and tradeoff; Section~5 evaluates the results and gives the GDPR assessment, deployment guidance and limitations; Section~6 concludes.
+
+% ===================================================================
+\section{Literature Review}
+\label{sec:litreview}
+% ===================================================================
+The project sits at the intersection of two mature but largely separate research streams, insider-threat detection and privacy-preserving data publishing, together with the regulatory literature that motivates their union. This section reviews each in turn and then positions the present work against them.
+
+\subsection{Insider-threat detection}
+Homoliak et al.\ \cite{homoliak2019} provide the most comprehensive recent survey, categorising insiders as malicious, negligent or compromised and organising detection into host-based, network-based and log-based approaches. This project targets the malicious category, the greatest risk in financial environments, and log-based detection, the dominant technical approach in enterprise settings. Salem et al.\ \cite{salem2008} and Liu et al.\ \cite{liu2018} repeatedly note two structural difficulties: genuine incidents are extremely rare, so labelled training data is scarce, and the base rate of malicious activity is minuscule, so even a low false-positive rate generates unmanageable alert volumes.
+
+These difficulties motivate \emph{unsupervised anomaly detection}, which learns a model of normal behaviour and flags deviations without needing labelled attacks. Chandola et al.\ \cite{chandola2009} give the canonical taxonomy of anomaly-detection techniques and their assumptions. Tuor et al.\ \cite{tuor2017} demonstrate unsupervised deep-learning detection of insiders in structured log streams, while Legg et al.\ \cite{legg2017} build user- and role-based behavioural profiles and score deviations from them. Yuan and Wu \cite{yuan2021} review the deep-learning branch of this literature specifically and observe that, despite strong reported results, almost all of it is evaluated on raw, fully identified log data, which is precisely the assumption this dissertation relaxes. The Isolation Forest of Liu, Ting and Zhou \cite{isoforest2008} is particularly well suited to this problem: it isolates anomalies directly rather than modelling normality, has near-linear time complexity, requires no distance metric, and handles the high-dimensional, mixed-scale behavioural feature vectors typical of audit data. These properties are the reason it is adopted as the detector in this work. Sommer and Paxson \cite{sommer2010} provide an essential cautionary counterpoint, arguing that machine learning for security anomaly detection is often undermined by unrealistic evaluation and by the operational cost of false positives. Their critique directly informs two decisions here: to report AUC-ROC and a full confusion matrix rather than accuracy alone, and to engineer legitimate outlier personas into the evaluation data so that the detection task is not artificially easy.
+
+A less frequently acknowledged difficulty concerns evaluation data rather than method. Because genuine incidents are commercially sensitive and legally protected, the field depends on a few shared corpora, above all the CERT synthetic dataset of Glasser and Lindauer \cite{glasser2013}, still the de facto benchmark a decade on. This monoculture has two consequences here. Reported figures are only weakly comparable across studies, because authors select different CERT versions, windows and aggregation granularities, so an F1 of $0.9$ in one paper and $0.8$ in another may reflect task difficulty rather than method quality. More consequentially, CERT models a generic US organisation and encodes neither the role structure of a UK financial institution nor the regulatory framing that makes anonymisation necessary. Legg et al.\ \cite{legg2017} and Tuor et al.\ \cite{tuor2017} both evaluate on CERT and report strong results, yet neither asks whether those results survive any reduction in data fidelity, which is precisely the question motivating this work.
+
+It is also worth stating why an Isolation Forest is preferred to the deep sequence models dominating recent work \cite{tuor2017,yuan2021}. The comparison is not primarily one of accuracy: deep models report higher headline figures, but they consume event order and fine-grained temporal structure, need substantially more data to train stably, and are difficult to explain to the compliance audience this work addresses. The Isolation Forest consumes a fixed per-entity aggregate vector, trains unsupervised in near-linear time, and yields a score that decomposes into interpretable feature contributions. That choice is deliberately conservative and not cost-free, a point returned to in Section~\ref{sec:eval}: an aggregate-feature model is by construction the detector family least disturbed by generalising individual event attributes, so it is a favourable rather than a worst case for the central finding.
+
+\subsection{Privacy-preserving data publishing}
+The second stream provides the anonymisation machinery. Samarati \cite{samarati2001} and Sweeney \cite{sweeney2002} introduced \emph{$k$-anonymity}, which requires every record to be indistinguishable, over a set of \emph{quasi-identifiers} (QIDs), from at least $k-1$ others, so that the probability of re-identification through those attributes is bounded by $1/k$. In practice $k$-anonymity is achieved by \emph{generalisation}, which replaces specific values with broader categories, and by \emph{suppression}, which removes residual records that cannot be grouped, navigating a lattice of possible generalisations. LeFevre et al.'s Incognito \cite{lefevre2005} is a foundational full-domain algorithm for this search, and Xu et al.\ \cite{xu2006} introduce utility-based local recoding that explicitly minimises information loss rather than treating all generalisations as equal.
+
+Two well-known limitations of $k$-anonymity are important for an honest assessment. Machanavajjhala et al.\ \cite{ldiversity2007} showed that $k$-anonymity alone remains vulnerable to \emph{attribute disclosure} when an equivalence class is homogeneous in a sensitive attribute, and proposed \emph{$\ell$-diversity} as a remedy. Li et al.\ \cite{tcloseness2007} refined this further with \emph{$t$-closeness}, which constrains the distribution of the sensitive attribute within each class. Fung et al.\ \cite{fung2010} survey the broader field and compare these models and their tradeoffs. The present work implements and verifies $k$-anonymity as its privacy mechanism, and treats $\ell$-diversity and $t$-closeness as the natural next layer, discussed in the evaluation. It is worth noting where log-based detection sits among the broader family of insider-detection paradigms. Psychological and sentiment-based approaches infer intent from communications, and graph-based approaches model relationships between users and resources; both raise arguably sharper privacy concerns, since they analyse the content and social structure of employee activity rather than its aggregate shape. Log-based behavioural detection is attractive precisely because it can operate on metadata and coarse aggregates, which makes it the paradigm most amenable to the anonymisation this project studies.
+
+The critical observation for this dissertation is that essentially all of this machinery was designed for, and evaluated on, \emph{static microdata}: a census extract or hospital discharge table in which each individual contributes exactly one row and the release is consumed by aggregate statistical queries. Audit logs violate both assumptions. An individual contributes thousands of rows, so the equivalence classes $k$-anonymity reasons about are populated by events rather than people, and event-level anonymity is not the same thing as person-level anonymity. The consumer is also not a statistical query but a detector operating on per-entity aggregates, so information loss measured on the released table is only loosely predictive of utility loss at the point of use. The literature offers little on this mismatch: network-trace anonymisation addresses a superficially similar problem, but it protects topology and host identity against traffic analysis rather than the behavioural profile of a named employee, and it offers no formal disclosure guarantee. A practitioner wishing to anonymise an audit log therefore has well-founded theory for the mechanism but no evidence about what it costs the application, which is exactly the gap this project fills.
+
+\subsection{Privacy and information-loss metrics}
+Quantifying the cost of anonymisation requires a principled information-loss metric. Wagner and Eckhoff \cite{wagner2018} give the definitive survey of technical privacy metrics, spanning adversarial, information-theoretic and data-similarity families. From it we adopt the \emph{Normalised Certainty Penalty} (NCP), due to Xu et al.\ \cite{xu2006}, which measures for each generalised attribute the fraction of the value domain a generalised value now covers, averaged across the QIDs. NCP yields a single comparable value in $[0,1]$, where $0$ is no generalisation and $1$ complete loss of an attribute's information, and reporting it alongside detection metrics is what allows the tradeoff to be stated quantitatively rather than impressionistically.
+
+\subsection{Regulatory framing: the GDPR and employee monitoring}
+The regulatory motivation draws on the GDPR itself and on practitioner analyses of its business impact \cite{voigt2017,tankard2016}, together with Cavoukian's Privacy by Design \cite{cavoukian2011}. A crucial legal nuance, explicit in Recital~26, is the distinction between \emph{pseudonymisation}, where data can still be attributed to an individual with additional information and so remains personal data in scope, and true \emph{anonymisation}, where re-identification is no longer reasonably likely and the data falls outside the Regulation. $k$-anonymity is one of the few techniques with a formal, testable claim to move data along that spectrum, which is what makes it attractive for audit logs. The Article~29 Working Party's Opinion 05/2014 \cite{wp29anon2014} is the authoritative regulatory reading of that threshold and is deliberately demanding: it assesses each technique against three residual risks, namely \emph{singling out}, \emph{linkability} and \emph{inference}, and notes that generalisation-based methods address singling out well but bound linkability and inference only partially. That assessment is adopted here as the standard against which the claims in Section~\ref{sec:gdpr} are hedged. Monitoring is further constrained by proportionality: even with a lawful basis it must be no more intrusive than necessary, a principle a tunable anonymity level operationalises directly. UK Information Commissioner's Office guidance \cite{ico2023} reinforces this, requiring employers to identify a lawful basis, be transparent, and ensure monitoring is necessary and proportionate to a specified purpose. A technique that lets an organisation dial the intrusiveness of retained data up or down, and evidence the choice, turns what is often a binary policy argument into a documented, defensible engineering position.
+
+\subsection{Alternative privacy models}
+$k$-anonymity is not the only candidate, so it is worth stating why it was chosen. \emph{Differential privacy} \cite{dwork2014} offers a stronger, composable, attack-agnostic guarantee by adding calibrated noise to query results, but it fits poorly here: insider detection consumes the individual per-employee record rather than an aggregate query, and injecting noise into each employee's features would corrupt precisely the rare-event signal detection depends on. $k$-anonymity instead preserves truthful records while bounding re-identification, keeping the anomaly structure intact. \emph{Encryption and access control} protect data in transit and at rest without reducing what is retained, so they do not address the data-minimisation obligation motivating the project. Finally, this work uses \emph{global} rather than \emph{local} recoding because it is simpler to verify and reason about legally; local recoding \cite{xu2006} typically achieves lower loss and is a promising extension.
+
+\subsection{Positioning and the research gap}
+Table~\ref{tab:related} situates this work against representative prior art. The two streams are each well studied but almost never together, and never, to our knowledge, with a validated quantitative framework for anonymising \emph{financial-sector audit logs} while preserving detective utility. This dissertation closes that gap by measuring both sides of the tradeoff on the same pipeline and expressing the result in terms a compliance function can act on.
+
+\begin{table}[tb]
+\centering
+\caption{Positioning against representative prior work. Only the present work evaluates detection and formal anonymity jointly on the same audit-log pipeline.}
+\label{tab:related}
+\small
+\begin{tabularx}{\linewidth}{@{}L C C C@{}}
+\toprule
+\textbf{Work} & \textbf{Detection} & \textbf{Formal privacy} & \textbf{Tradeoff} \\
+\midrule
+Homoliak et al.\ \cite{homoliak2019} & \checkmark & \ding{55} & \ding{55} \\
+Yuan and Wu \cite{yuan2021} & \checkmark & \ding{55} & \ding{55} \\
+Tuor et al.\ \cite{tuor2017} & \checkmark & \ding{55} & \ding{55} \\
+Legg et al.\ \cite{legg2017} & \checkmark & \ding{55} & \ding{55} \\
+Sweeney \cite{sweeney2002} & \ding{55} & \checkmark & \ding{55} \\
+Machanavajjhala et al.\ \cite{ldiversity2007} & \ding{55} & \checkmark & \ding{55} \\
+Fung et al.\ \cite{fung2010} & \ding{55} & \checkmark & $\sim$ \\
+\textbf{This work} & \checkmark & \checkmark & \checkmark \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ===================================================================
+\section{System Design and Methods}
+% ===================================================================
+This section describes the methodology, the system architecture, and each component of the pipeline in the order in which data flows through it.
+
+\subsection{Methodology}
+The project follows a \emph{constructive development and experimental evaluation} methodology: an artefact is built and then used as the instrument of a controlled experiment, which suits a causal question asking how a design parameter ($k$) affects two measurable outcomes. The work proceeds in four phases, namely dataset construction, baseline detection, anonymisation and tradeoff evaluation, corresponding to objectives O2 through O4. All code and data are version-controlled and every step seeded, so the reported numbers are exactly reproducible.
+
+\subsection{System architecture}
+The system is a linear pipeline of five components, shown in the box below. A \emph{data layer} stores the unified log and employee table in a relational database; a \emph{feature engineering} component aggregates raw events into a per-employee behavioural vector; an \emph{anonymisation} component applies $k$-anonymity generalisation and suppression and verifies the result; a \emph{detection} component fits the Isolation Forest and produces anomaly scores; and a Streamlit \emph{presentation} component exposes both views, the results and the tradeoff to an analyst. Anonymisation sits deliberately between the data layer and detection, so a deployment can feed detection from anonymised rather than raw data, which is the operational scenario the experiment evaluates.
+
+\begin{mdframed}[backgroundcolor=boxgrey,linewidth=0.4pt,roundcorner=3pt,innertopmargin=5pt,innerbottommargin=5pt]
+{\footnotesize\ttfamily Unified log (DB) $\rightarrow$ Feature engineering (per employee) $\rightarrow$ [Anonymisation: generalise + suppress + verify $k$] $\rightarrow$ Isolation Forest $\rightarrow$ Scores, metrics, tradeoff $\rightarrow$ Streamlit dashboard}
+\end{mdframed}
+
+\subsection{Dataset design and rationale}
+Real financial audit logs cannot lawfully be released for research, and the CERT corpus \cite{glasser2013}, though valuable, is US-oriented and not tailored to a UK financial institution's role structure or GDPR framing. We therefore generated a purpose-built synthetic dataset whose schema mirrors an enterprise unified log. The generator is seeded for reproducibility and deliberately engineered so that the tradeoff is non-trivial, through two design features that stress the detector. First, the normal population is heterogeneous: alongside regular staff the generator injects legitimate-outlier archetypes, creating genuine false-positive pressure so the raw baseline lands realistically below a perfect score rather than trivially separating the classes. Second, insiders are subtle, performing small-chunk exfiltration mostly inside office hours and drawn from rare resource names that fall into small equivalence classes, so stronger anonymisation suppresses proportionally more of their distinguishing signal, which is exactly the effect the experiment measures. Table~\ref{tab:dataset} summarises the resulting corpus.
+
+\begin{table}[tb]
+\centering
+\caption{Composition of the synthetic UK financial-sector audit-log dataset.}
+\label{tab:dataset}
+\small
+\begin{tabularx}{\linewidth}{@{}L r@{}}
+\toprule
+\textbf{Property} & \textbf{Value}\\
+\midrule
+Employees (entities) & 500 \\
+\quad of which malicious insiders & 25 (5.0\%) \\
+Observation window & 180 days \\
+Total log events & 850{,}853 \\
+\quad of which malicious events & 9{,}206 (1.08\%) \\
+Departments / seniority tiers & 8 / 3 \\
+Activity types & logon, web, file, email, USB \\
+Behavioural features per entity & 8 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Table~\ref{tab:personas} details the five behavioural archetypes used to build that heterogeneous normal population. Each perturbs a subset of the behavioural parameters in a direction overlapping with genuine insider indicators, which is what creates realistic false-positive pressure.
+
+\begin{table}[tb]
+\centering
+\caption{Legitimate-outlier archetypes in the normal population and the benign behaviour that makes them resemble insiders.}
+\label{tab:personas}
+\small
+\begin{tabularx}{\linewidth}{@{}p{3.4cm} L@{}}
+\toprule
+\textbf{Archetype} & \textbf{Distinguishing benign behaviour}\\
+\midrule
+Workaholic & Elevated after-hours and weekend activity \\
+IT administrator & Heavy USB use and privileged high-sensitivity access \\
+Heavy analyst & High copy-action ratio and data volume \\
+External-facing & High external-web and email ratio \\
+Occasional USB user & Sporadic removable-media use \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Feature engineering}
+Detection operates at the level of the entity (employee) rather than the individual event, because insider behaviour is a pattern over time. The raw log is aggregated per entity into the eight-dimensional feature vector of Table~\ref{tab:features}, encoding the classic indicators of abnormal working hours, unusual data movement and elevated access to sensitive resources. Ratios are preferred to raw counts wherever possible, so a busy but benign employee is not penalised for generating many events: what matters is the \emph{shape} of activity, not its volume.
+
+\begin{table}[tb]
+\centering
+\caption{Behavioural features aggregated per employee and their insider rationale.}
+\label{tab:features}
+\small
+\begin{tabularx}{\linewidth}{@{}p{3.4cm} L@{}}
+\toprule
+\textbf{Feature} & \textbf{Insider rationale}\\
+\midrule
+After-hours ratio & Exfiltration often occurs outside core hours \\
+External-activity ratio & Data leaving the internal perimeter \\
+Avg / max / total volume & Bulk or unusual data movement \\
+High-sensitivity ratio & Disproportionate access to sensitive files \\
+USB events per day & Removable-media exfiltration channel \\
+Copy-action ratio & Copying rather than merely reading \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Evaluation metrics}
+Detection is a binary classification of each employee as insider or normal, and the metrics follow from the confusion-matrix counts of true positives (TP), false positives (FP) and false negatives (FN). Precision is the fraction of flagged employees who are genuine insiders, recall is the fraction of genuine insiders that are flagged, and their harmonic mean is the F1 score, as in Equations~\eqref{eq:precision} and~\eqref{eq:f1}:
+\begin{equation}
+\label{eq:precision}
+\text{Precision}=\frac{\text{TP}}{\text{TP}+\text{FP}},
+\qquad
+\text{Recall}=\frac{\text{TP}}{\text{TP}+\text{FN}},
+\end{equation}
+\vspace{-1.1em}
+\begin{equation}
+\label{eq:f1}
+\text{F1}=\frac{2\,\text{Precision}\cdot\text{Recall}}{\text{Precision}+\text{Recall}}.
+\end{equation}
+F1 balances the two in a single threshold-dependent number. Because F1 depends on where the decision threshold is set, we also report the area under the receiver operating characteristic curve (AUC-ROC), which integrates the true-positive rate against the false-positive rate over all thresholds and thus measures how well the anomaly score \emph{ranks} insiders above normal staff independently of any operating point. As argued by Sokolova and Lapalme \cite{sokolova2009}, reporting a threshold-free ranking metric alongside a threshold-dependent one is essential under heavy class imbalance, and the divergence between the two under anonymisation turns out to be one of the more informative results of this study.
+
+One structural consequence of this protocol explains a pattern visible in every results table. The detector runs at a fixed contamination of $5\%$, so it flags exactly $25$ of $500$ entities and the dataset contains exactly $25$ insiders. Predicted positives therefore equal actual positives, giving $\text{TP}+\text{FP}=\text{TP}+\text{FN}=25$, which by Equations~\eqref{eq:precision}--\eqref{eq:f1} forces precision, recall and F1 to coincide in every configuration and false positives to equal false negatives. Those three columns are consequently one quantity reported three ways, retained only for comparability with the literature, and this is the principal reason AUC-ROC is foregrounded as the only reported metric free of the constraint.
+
+\subsection{Baseline detection with Isolation Forest}
+The detector is an Isolation Forest \cite{isoforest2008} with $200$ trees and a contamination parameter of $0.05$, which matches the known $5\%$ insider prevalence, trained unsupervised on the feature matrix. The forest isolates each entity $x$ by recursive random splitting and scores it by the expected path length $E[h(x)]$ required to do so, normalised by $c(n)$, the average path length of an unsuccessful search in a binary tree of $n$ points, as in Equation~\eqref{eq:iforest}:
+\begin{equation}
+\label{eq:iforest}
+s(x,n)=2^{-\frac{E[h(x)]}{c(n)}}.
+\end{equation}
+Entities isolated in few splits are anomalous. In the scikit-learn implementation the sign is inverted, so a lower score denotes a more anomalous entity, and the $5\%$ most anomalous are flagged as suspected insiders. Because detection is unsupervised, ground-truth labels are used only for evaluation and never for training, reflecting the operational reality that real insiders are not labelled in advance. Following Sommer and Paxson \cite{sommer2010} and Sokolova and Lapalme \cite{sokolova2009}, AUC-ROC is foregrounded alongside the threshold-dependent F1.
+
+\subsection{The \texorpdfstring{$k$}{k}-anonymity anonymisation module}
+The core contribution is a generalisation-and-suppression module that transforms the log to satisfy $k$-anonymity over four QIDs, each with the hierarchy shown in Table~\ref{tab:hierarchy}. Formally, a released table $T^{*}$ satisfies $k$-anonymity with respect to a QID set $Q$ if every equivalence class $E$ induced by $Q$ contains at least $k$ records, bounding the probability that an adversary linking on $Q$ identifies an individual, as in Equation~\eqref{eq:kanon}:
+\begin{equation}
+\label{eq:kanon}
+\min_{E\in T^{*}/Q}|E| \;\ge\; k
+\quad\Longrightarrow\quad
+\Pr[\text{re-identification}] \;\le\; \frac{1}{k}.
+\end{equation} Identity is first pseudonymised with a salted one-way hash, removing direct identifiers while keeping per-entity aggregation possible, and the role attribute is then generalised. The exact timestamp, a direct re-identification vector, is always dropped, retaining only a coarse date for ordering, and time is generalised from an exact hour up to complete removal. Resource and action are generalised through their natural category hierarchies.
+
+\begin{table}[tb]
+\centering
+\caption{Generalisation hierarchies for the four quasi-identifiers. Higher levels are more general and lose more information.}
+\label{tab:hierarchy}
+\small
+\begin{tabularx}{\linewidth}{@{}p{2.4cm} L@{}}
+\toprule
+\textbf{QID} & \textbf{Levels (specific $\rightarrow$ general)}\\
+\midrule
+Identity & department $\rightarrow$ division $\rightarrow$ any role \\
+Timestamp & exact hour $\rightarrow$ 6-hour window $\rightarrow$ core / off hours $\rightarrow$ any time \\
+Resource & exact resource $\rightarrow$ sensitivity class $\rightarrow$ any resource \\
+Action & exact action $\rightarrow$ behavioural category $\rightarrow$ any action \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+For a target $k$, the module performs global recoding, described in Algorithm~\ref{alg:anon}. It enumerates the generalisation lattice ordered by total generalisation level, so the least-loss configuration is considered first, and computes the size of every QID equivalence class. Residual classes smaller than $k$ are suppressed provided the total suppression rate stays within a $5\%$ budget, and the first configuration satisfying $k$ within budget is selected, yielding the minimum-information-loss anonymisation for that $k$. The result is then verified: $k$ is confirmed to equal the smallest equivalence-class size over the QIDs, so the guarantee is proven programmatically rather than asserted.
+
+The lattice for four QIDs contains a small, fixed number of configurations, so the search is inexpensive; the dominant cost is the per-configuration equivalence-class computation, a single group-by over the log and therefore near-linear in the number of events. The full four-value sweep over the $850{,}853$-event log completes in well under a minute on a commodity machine, so the approach is practical at the scale of a mid-sized institution's log.
+
+\refstepcounter{algo}\label{alg:anon}
+\begin{mdframed}[backgroundcolor=boxgrey,linewidth=0.4pt,roundcorner=3pt,%
+ innertopmargin=6pt,innerbottommargin=6pt,nobreak=true]
+{\small\textbf{Algorithm \thealgo.} \textit{$k$-anonymisation by minimum-loss global recoding}}\\[3pt]
+{\footnotesize\ttfamily
+\setlength{\tabcolsep}{0pt}\renewcommand{\arraystretch}{1.15}%
+\begin{tabular}{@{}r@{\hspace{0.6em}}l@{}}
+1. & pseudonymise identities (salted hash)\\
+2. & for each config in lattice (least-general first):\\
+3. & generalise QIDs to that config\\
+4. & compute equivalence-class sizes\\
+5. & suppress classes with size $<$ k\\
+6. & if suppression rate $\le$ 5\%: select and stop\\
+7. & verify min class size $\ge$ k; compute NCP\\
+\end{tabular}}
+\end{mdframed}
+\vspace{-0.3em}
+
+\subsection{Information loss and privacy verification}
+Information loss is quantified with the Normalised Certainty Penalty. For a categorical attribute $A_j$ generalised to a node covering $m_j$ of $M_j$ leaf values, the per-attribute penalty is $(m_j-1)/(M_j-1)$, and the configuration's NCP is the mean over the $d=4$ QIDs \cite{xu2006,wagner2018}, as in Equation~\eqref{eq:ncp}:
+\begin{equation}
+\label{eq:ncp}
+\text{NCP}=\frac{1}{d}\sum_{j=1}^{d}\frac{m_j-1}{M_j-1}\;\in\;[0,1].
+\end{equation} Privacy verification is independent of anonymisation: it recomputes the equivalence classes from the output and reports the achieved $k$, the number of classes and their mean size, so the guarantee can be audited without trusting the generator. As a worked illustration, the timestamp attribute has a leaf domain of $24$ hours; generalising an exact hour to a $6$-hour window covers $m=6$ of $M=24$ values, a penalty of $(6-1)/(24-1)\approx0.22$, which averaged with three un-generalised attributes at penalty $0$ gives an NCP of $0.054$, matching the $k=10$ row of Table~\ref{tab:tradeoff}. A compliance reviewer can therefore reproduce the number by hand rather than trusting an opaque score.
+
+\subsection{Anonymised re-detection and experimental protocol}
+Crucially, detection is re-run on the anonymised data using only anonymised columns, with the feature vector rebuilt from generalised actions, sensitivity classes and retained flags, aggregated per pseudonym. This measures the operationally relevant quantity: how well an analyst could detect insiders seeing only the anonymised log. For each $k \in \{2,5,10,20\}$ the pipeline records the selected generalisation levels, the achieved $k$, the number and mean size of equivalence classes, the suppression rate, the NCP and the full suite of detection metrics, treating the raw baseline as the $k=1$ reference point.
+
+\subsection{Implementation and reproducibility}
+The system is implemented in Python~3. Data is held in a relational store with two tables: \texttt{employees}, carrying identity, department, role, seniority and the ground-truth insider flag, and \texttt{unified\_log}, carrying one row per event with its timestamp, activity type, resource, sensitivity, action, after-hours and external flags, and data volume. Feature engineering and anonymisation use pandas, the detector is the scikit-learn Isolation Forest, and the dashboard uses Streamlit. Every stochastic component is driven by a fixed seed, so a reviewer running the pipeline obtains exactly the numbers reported here. The $k$-verification and NCP routines sit in an independent module, so a compliance reviewer can verify the achieved $k$ without trusting the anonymiser, and a different detector or privacy model can be substituted at one well-defined interface.
+
+% ===================================================================
+\section{Results}
+\label{sec:results}
+% ===================================================================
+
+\subsection{Dataset characteristics}
+The generator produced $850{,}853$ log events across 500 employees over 180 days, of which 25 employees are malicious insiders responsible for $9{,}206$ events, just over one percent of the log. The heterogeneous normal population behaves as intended: several benign archetypes produce genuinely outlying feature values, visible in the wide spread of the normal class in Figure~\ref{fig:baseline}D and in the normal employee ranked second in Figure~\ref{fig:baseline}G, confirming that the task is not trivially separable.
+
+\subsection{Baseline detection on raw logs (O2)}
+On the raw log the Isolation Forest cleanly separates insiders from normal staff, correctly identifying $22$ of $25$ insiders with only $3$ false positives out of $475$ normal employees, giving precision, recall and F1 all equal to $\mathbf{0.88}$ and an AUC-ROC of $\mathbf{0.995}$ (Table~\ref{tab:baseline}). This comfortably exceeds the F1 target of $0.75$ for O2 and establishes the ceiling against which every anonymised configuration is compared.
+
+\begin{table}[tb]
+\centering
+\caption{Baseline detection performance on raw logs, with the confusion matrix (500 entities, 25 insiders).}
+\label{tab:baseline}
+\small
+\begin{tabularx}{\linewidth}{@{}L c @{\hskip 2.2em} l C C@{}}
+\toprule
+\textbf{Metric} & \textbf{Value} & \multicolumn{3}{c}{\textbf{Confusion matrix}}\\
+\cmidrule(l){3-5}
+Precision & 0.88 & & Pred.\ Normal & Pred.\ Insider\\
+Recall    & 0.88 & Normal  & 472 (TN) & 3 (FP)\\
+F1        & 0.88 & Insider & 3 (FN)   & 22 (TP)\\
+AUC-ROC   & 0.995 & & & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+In operational terms, when the system accuses someone it is right $88\%$ of the time and it catches $88\%$ of real insiders, while an AUC-ROC of $0.995$ means the score ranks insiders above normal staff almost perfectly, against $1.0$ for flawless ordering and $0.5$ for random. The three missed insiders are the subtlest exfiltrators, barely departing from the busy-analyst and IT-administrator archetypes, which are exactly the hard cases the dataset was designed to include.
+
+\begin{figure}[tb]
+\centering
+\includegraphics[width=\linewidth]{fig_baseline_labelled.png}
+\caption{\textbf{Baseline Isolation-Forest diagnostics on the raw log.} Seven views of the same single run over 500 entities, establishing the $k=1$ reference point.
+\textbf{(A) Performance metrics.} The four headline scores at the fixed $5\%$ operating point. Precision, recall and F1 coincide at $0.88$ for the structural reason given in Section~3.5; AUC-ROC of $0.995$ is the only threshold-free figure and is therefore the one to read.
+\textbf{(B) Confusion matrix.} Rows are ground truth, columns predictions. The $472$ true negatives dominate, and the off-diagonal cells are equal at $3$ each, again a consequence of the fixed operating point.
+\textbf{(C) ROC curve.} True-positive rate against false-positive rate over every threshold. The curve rises almost vertically to $1.0$ before the false-positive rate reaches $0.05$, so the detector recovers nearly all insiders while accusing almost no one; the grey diagonal is random guessing.
+\textbf{(D) Anomaly-score distribution.} Insiders (red) sit at the low, anomalous end while normal staff (blue) form a long right tail; the dashed line is the $5\%$ decision threshold. The narrow band where the colours overlap is where the six errors are generated, and it is this overlap that widens as $k$ increases.
+\textbf{(E) Feature uplift.} Percentage increase of each feature for insiders relative to normal staff. USB usage per day dominates at over $4000\%$, followed by copy-action and high-sensitivity ratios, while the data-volume features contribute almost nothing, the intended consequence of designing exfiltration to occur in small chunks.
+\textbf{(F) PCA projection.} The feature space standardised and reduced to two components explaining $61.3\%$ of variance. Insiders (red diamonds) form a distinct cluster to the lower right, confirming they are separable on behavioural aggregates alone; the few blue points drifting toward them are legitimate-outlier archetypes.
+\textbf{(G) Ten most anomalous entities.} Ranked by anomaly score. Nine are confirmed insiders; the exception, EMP0489, is a legitimate-outlier archetype ranked second overall, showing that the engineered false-positive pressure is real rather than nominal.}
+\label{fig:baseline}
+\end{figure}
+
+\subsection{What drives detection}
+The feature-uplift panel (Figure~\ref{fig:baseline}E) shows which behaviours the detector relies on, and the ordering aligns with domain intuition for financial-sector exfiltration, where removable media and repeated copying of sensitive files are the classic signatures. This gives the detector an interpretable basis rather than an opaque score, which matters for a compliance audience.
+
+\subsection{\texorpdfstring{$k$}{k}-anonymity verification (O3)}
+The module satisfied the target $k$ at all four configurations, verified programmatically as the minimum equivalence-class size over the QIDs per Equation~\eqref{eq:kanon}. Table~\ref{tab:tradeoff} lists the achieved $k$, equal to the target in every case, the generalisation levels selected by the lattice search, and the resulting class structure. Increasing $k$ collapses the log into fewer, larger classes, from $55{,}684$ of mean size $14.8$ at $k=2$ to $4{,}442$ of mean size $185.7$ at $k=20$, satisfying O3.
+
+\subsection{Privacy and utility tradeoff (O4)}
+Table~\ref{tab:tradeoff} and Figure~\ref{fig:tradeoff} report the central empirical result. Three findings stand out.
+
+\begin{table}[tb]
+\centering
+\caption{Privacy and utility tradeoff across $k$-anonymity configurations. The $k=1$ row is the raw baseline. Generalisation levels are given as (identity, time, resource, action); higher is more generalised. NCP is the Normalised Certainty Penalty (information loss); Supp.\ is the suppression rate.}
+\label{tab:tradeoff}
+\small
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}} c l r r r r r r r r@{}}
+\toprule
+\textbf{$k$} & \textbf{Gen.\ (i,t,r,a)} & \textbf{Classes} & \textbf{Mean} & \textbf{NCP} & \textbf{Supp.} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F1} & \textbf{AUC}\\
+\midrule
+1 (raw) & (0,\,0,\,0,\,0) & n/a & n/a & 0.000 & 0.0\% & 0.88 & 0.88 & \textbf{0.88} & \textbf{0.995}\\
+2  & (0,\,0,\,0,\,0) & 55{,}684 & 14.8 & 0.000 & 2.9\% & 0.80 & 0.80 & 0.80 & 0.993\\
+5  & (1,\,0,\,0,\,0) & 20{,}135 & 40.3 & 0.060 & 4.5\% & 0.76 & 0.76 & 0.76 & 0.990\\
+10 & (0,\,1,\,0,\,0) &  9{,}817 & 82.4 & 0.054 & 4.9\% & 0.76 & 0.76 & \textbf{0.76} & 0.989\\
+20 & (0,\,0,\,1,\,0) &  4{,}442 & 185.7& 0.082 & 3.1\% & 0.72 & 0.72 & 0.72 & 0.954\\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{figure}[tb]
+\centering
+\includegraphics[width=\linewidth]{tradeoff_curve_clean.png}
+\caption{\textbf{Privacy and utility tradeoff across anonymity levels.} The central result of the project, plotted on twin vertical axes so that what is gained and what is paid can be read against each other. The horizontal axis is the anonymity level, ordered from the raw baseline ($k=1$, no protection) to $k=20$ (strongest protection); it is categorical, so the five configurations are evenly spaced rather than scaled by $k$.
+\emph{Left axis, in blue, detection performance.} \textbf{AUC-ROC} (dark squares) measures, without any threshold, how well the score ranks insiders above normal staff. It is almost flat, falling only from $0.995$ to $0.989$ across $k=1$ to $k=10$ and reaching $0.954$ at $k=20$; this near-horizontal line is the single most important feature of the figure, because it says the ordering of suspicion survives anonymisation nearly intact. \textbf{F1} (light circles) is the thresholded measure at the fixed $5\%$ operating point and declines visibly from $0.88$ to $0.72$. The widening gap between the two blue curves is the AUC/F1 divergence of Section~\ref{sec:eval}: most of the F1 decline is a thresholding artefact rather than lost discriminative power.
+\emph{Right axis, in red and orange, privacy cost.} \textbf{NCP} (red triangles) is the Normalised Certainty Penalty, the syntactic information loss from generalisation. It is \emph{non-monotone}: $0$ at $k=2$, $0.060$ at $k=5$, back down to $0.054$ at $k=10$, then $0.082$ at $k=20$. This zig-zag is not noise, since the module re-solves the lattice independently at every $k$, and at $k=10$ a six-hour time window happens to be cheaper than the identity generalisation chosen at $k=5$. \textbf{Suppression rate} (orange dotted) is the fraction of records discarded because their class stayed below $k$; it stays within the $5\%$ budget throughout, peaking at $4.9\%$. The practical reading is the vertical slice at $k=10$: a far stronger guarantee than $k=2$ for an AUC cost of $0.004$, at lower information loss than $k=5$.}
+\label{fig:tradeoff}
+\end{figure}
+
+First, ranking quality is highly robust to anonymisation: AUC-ROC falls only from the raw $0.995$ to $0.989$ at $k=10$, and even at $k=20$ remains a strong $0.954$. An analyst working solely from the anonymised log can therefore still rank insiders above normal staff almost as well as with raw data, even when records are indistinguishable in groups of twenty.
+
+Second, thresholded F1 degrades gracefully rather than catastrophically, falling from $0.88$ raw to $0.72$ at $k=20$. Across the entire privacy range the detector loses at most four insiders, from $22$ caught down to $18$.
+
+Third, information loss is not monotone in $k$, because the module minimises loss at each level independently: $k=5$ generalises identity to division (NCP $0.060$), $k=10$ finds a 6-hour time window cheaper (NCP $0.054$), and $k=20$ generalises resource to sensitivity class (NCP $0.082$). Detection utility, by contrast, falls monotonically, because the guarantee strengthens monotonically regardless of which attribute is generalised. The gap between the smooth utility decline and the jagged NCP curve is itself a useful finding: NCP measures syntactic loss, whereas utility depends on \emph{which} information is lost relative to the discriminative features, so the two are related but not interchangeable.
+
+Table~\ref{tab:perk} decomposes the outcome into the raw counts underlying the metrics, and Figure~\ref{fig:metrics} visualises the same trend. It is informative to ask \emph{which} insiders are lost as $k$ rises. In every case they are the subtlest exfiltrators, already close to the busy-analyst and IT-administrator archetypes on raw data and sitting near the decision threshold. Anonymisation does not blind the detector to obvious insiders; it erodes the margin on borderline ones, which is why per-configuration threshold recalibration recovers most of the loss. Insiders with strong USB and copy signatures remain flagged at every level, because those aggregate rates survive generalisation of the categorical quasi-identifiers.
+
+\begin{table}[tb]
+\centering
+\caption{Per-configuration confusion counts (of 25 insiders and 475 normal employees). TP caught, FN missed, FP false alarms.}
+\label{tab:perk}
+\small
+\begin{tabularx}{\linewidth}{@{}L C C C C C@{}}
+\toprule
+\textbf{Config} & \textbf{TP} & \textbf{FN} & \textbf{FP} & \textbf{Precision} & \textbf{Recall}\\
+\midrule
+Raw   & 22 & 3 & 3 & 0.88 & 0.88\\
+$k$=2  & 20 & 5 & 5 & 0.80 & 0.80\\
+$k$=5  & 19 & 6 & 6 & 0.76 & 0.76\\
+$k$=10 & 19 & 6 & 6 & 0.76 & 0.76\\
+$k$=20 & 18 & 7 & 7 & 0.72 & 0.72\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[tb]
+\centering
+\includegraphics[width=\linewidth]{fig_metrics_labelled.png}
+\caption{\textbf{Detection outcome across the raw baseline and the four anonymity levels.} The same five configurations as Figure~\ref{fig:tradeoff}, shown as bars so that magnitudes can be compared directly rather than read off a trend line.
+\textbf{(A) Metric comparison.} Four bars per configuration. The three blue bars, precision, recall and F1, are identical within every group, the visual signature of the fixed $5\%$ operating point described in Section~3.5, and step down in unison from $0.88$ to $0.72$. The red AUC-ROC bar barely changes height, remaining above $0.95$ even at $k=20$. The contrast between the stepping blue bars and the flat red one is the same divergence Figure~\ref{fig:tradeoff} shows as curves, reproduced here because the bar form makes the size of the difference easier to judge.
+\textbf{(B) Outcome decomposition.} The identical results as counts of people rather than scores, which is the form an operational reader cares about. Green is insiders caught, red insiders missed, orange false alarms. Across the whole privacy range the green bar falls only from $22$ to $18$, while red and orange rise in lockstep from $3$ to $7$, again because the fixed operating point forces false positives to equal false negatives. No step produces an abrupt collapse, which is the granular evidence that degradation is graceful, and since false alarms rise only from three to six over the recommended range, the additional review burden is negligible.}
+\label{fig:metrics}
+\end{figure}
+
+\subsection{The interactive analysis tool}
+Beyond the batch experiment, the pipeline is exposed through a Streamlit dashboard that constitutes the demonstrable artefact. It lets an analyst load the unified log, view raw and anonymised sample tables side by side, select an anonymity level and see the resulting equivalence-class structure and suppression rate, and run detection on either view, with detected entities listed by anomaly score and the tradeoff plotted live as $k$ changes. Presenting both views together makes the effect tangible: exact timestamps and identities disappear while the behavioural summary that drives detection survives. The dashboard deliberately surfaces privacy metrics alongside detection metrics, so the tradeoff is never hidden from the operator.
+
+\subsection{Meeting the success measures}
+Every success measure of Section~1 is met: twenty-five sources synthesised (O1); a baseline F1 of $0.88$ against the $0.75$ target with documented precision, recall and AUC (O2); $k$-anonymity verified programmatically at all four configurations (O3); a complete tradeoff curve with a recommended configuration (O4); and the GDPR mapping in the next section (O5).
+
+% ===================================================================
+\section{Evaluation and Discussion}
+\label{sec:eval}
+% ===================================================================
+
+\subsection{Interpreting the tradeoff and a recommended configuration}
+The headline conclusion is that strong, provable anonymity and effective insider detection are not mutually exclusive. Across a tenfold increase in anonymity, from $k=2$ to $k=20$, F1 falls by only $0.08$ and AUC by $0.04$. Insider signal in audit data is carried by aggregate behavioural rates such as USB usage, copy ratios and after-hours proportion, and these survive generalisation of the categorical QIDs far better than a re-identification attack does: anonymisation blurs \emph{who} and \emph{exactly when} but preserves \emph{how much} and \emph{what kind}, which is what the detector consumes.
+
+Within this space, $k=10$ is the recommended deployment configuration. It offers a materially stronger guarantee than $k=5$, every record being indistinguishable from at least nine others rather than four, yet incurs no loss of F1 (both $0.76$), a negligible AUC difference ($0.989$ against $0.990$) and in fact marginally lower information loss, so it dominates $k=5$ on almost every axis. We would reserve $k=20$ for particularly sensitive deployments or longer retention, accepting the AUC drop to $0.954$, and treat $k=2$ as insufficient, since a re-identification probability of one half offers little protection despite its near-zero utility cost.
+
+\subsection{GDPR compliance assessment (O5)}
+\label{sec:gdpr}
+The value of expressing anonymity as the tunable parameter $k$ is that it converts an abstract legal question into an engineering decision. Table~\ref{tab:gdpr} maps each configuration to the GDPR articles it does and does not satisfy, and the reasoning is as follows.
+
+\begin{table}[tb]
+\centering
+\caption{GDPR posture by configuration. \checkmark\ denotes satisfied, \ding{55}\ not satisfied, and $\sim$ partially or conditionally satisfied.}
+\label{tab:gdpr}
+\small
+\begin{tabularx}{\linewidth}{@{}L C C C C@{}}
+\toprule
+\textbf{GDPR provision} & \textbf{Raw} & \textbf{$k$=2} & \textbf{$k$=5--10} & \textbf{$k$=20}\\
+\midrule
+Art.\ 4 / Recital 26 (anonymisation) & \ding{55} & \ding{55} & $\sim$ & \checkmark\\
+Art.\ 5(1)(c) data minimisation & \ding{55} & $\sim$ & \checkmark & \checkmark\\
+Art.\ 5(1)(e) storage limitation & \ding{55} & $\sim$ & \checkmark & \checkmark\\
+Art.\ 25 data protection by design & \ding{55} & \checkmark & \checkmark & \checkmark\\
+Art.\ 32 security of processing & $\sim$ & \checkmark & \checkmark & \checkmark\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The raw log is unambiguously personal data and satisfies none of the minimisation-oriented provisions. Pseudonymisation alone, as at $k=2$, does not exit GDPR scope, since Recital~26 is explicit that pseudonymised data remains personal data. The critical transition occurs at moderate $k$: at $k=5$ to $k=10$, with every record indistinguishable within a class of at least five to ten and direct identifiers and exact timestamps removed, the data has a credible though never absolute claim to satisfy Articles~5(1)(c) and~5(1)(e), and the design embodies Articles~25 and~32. Only at $k=20$ does it approach the Recital~26 threshold at which it might fall outside the Regulation entirely. The honest caveat \cite{ldiversity2007,tcloseness2007,wp29anon2014} is that $k$-anonymity bounds identity but not attribute disclosure, so a fuller deployment would layer $\ell$-diversity or $t$-closeness, and no technical measure removes the need for a documented lawful basis and a Data Protection Impact Assessment.
+
+A second caveat qualifies the strongest reading of Table~\ref{tab:gdpr} and deserves stating plainly. Detection operates on per-employee aggregates, so every record belonging to one individual carries the same salted pseudonym for the whole 180-day window. That pseudonym defeats direct identification but preserves complete \emph{linkability} across an individual's records, one of the three residual risks the Article~29 Working Party requires to be assessed separately from singling out \cite{wp29anon2014}, and under Recital~26 it remains personal data for as long as the salt is retrievable. The posture in Table~\ref{tab:gdpr} should therefore be read as applying to the generalisation of the quasi-identifiers, not as a claim that the log leaves the scope of the Regulation merely by reaching a given $k$. Two cheap mitigations follow: hold the salt separately from the log and destroy it when the analysis window closes, and rotate the pseudonym between windows so linkage cannot accumulate. With those controls the $k=20$ configuration has a defensible claim to Recital~26 anonymity; without them, the accurate characterisation is strong pseudonymisation with a bounded, measured disclosure risk on the quasi-identifiers, a materially weaker but still valuable position.
+
+\subsection{Practical deployment guidance}
+Four recommendations follow for a regulated firm. Detection should be driven from the anonymised log, since this costs little detective power while materially reducing privacy risk. The anonymity level should be a governed parameter documented in the firm's Data Protection Impact Assessment, with $k=10$ a reasonable default. Retention should be tied to $k$, because a higher $k$ reduces re-identification risk and can justify a longer analysis window under storage limitation, whereas raw data should be retained only briefly. Finally, the detection cut-off should be recalibrated per configuration rather than fixed. The cost-benefit calculus is favourable: false alarms rise only from three to six across the whole range, so the analyst review burden barely changes, while the reduction in privacy risk is substantial and, unlike a policy control, provable and auditable.
+
+\subsection{Critical reflection on the artefact}
+Judged against its objectives the artefact is successful: all five were met, the baseline exceeded its target, $k$-anonymity was formally verified, and a complete tradeoff curve with a justified recommendation was produced. The design choice that most improved the work was investing in a hard dataset: an earlier iteration produced insiders so blatant that detection was perfect at every $k$ and the curve was flat, so engineering subtle insiders and legitimate-outlier personas is what made the baseline land at a realistic $0.88$ and the tradeoff meaningful. The clearest reflective insight is the divergence between AUC and F1, which Section~6 returns to. Most of the apparent F1 loss is a thresholding artefact, since at higher $k$ the score distribution compresses and a fixed $5\%$ cut-off becomes mis-calibrated, so recovering it is as simple as recalibrating per configuration.
+
+\subsection{Ethical implications revisited}
+The results allow the dual-use concern of Section~1 to be revisited with evidence. Because effective detection persists at moderate $k$, the project removes a common excuse for over-retention: an organisation can no longer argue that privacy protection would cripple its ability to detect insiders, which cuts against invasive monitoring rather than enabling it. The finding could nonetheless be misused to argue that, since anonymised monitoring still works, monitoring should be extended more broadly. The defence is built into the GDPR mapping: even a well-anonymised system remains subject to necessity and proportionality, and Section~\ref{sec:gdpr} is explicit that a technical guarantee does not substitute for a lawful basis, purpose limitation, or a Data Protection Impact Assessment. The artefact makes privacy-respecting monitoring more achievable, but it cannot adjudicate whether a monitoring programme is justified in the first place; that remains a governance decision for which the tool supplies evidence rather than a verdict.
+
+\subsection{Limitations and threats to validity}
+\label{sec:limitations}
+Six limitations bound the strength of the claims, set out in order of how far they qualify the central finding.
+
+\noindent\textbf{Construct validity: synthetic data.} Real financial logs cannot be lawfully released, and synthesis permits known ground truth and controlled difficulty, but the numbers depend on the generator's assumptions. Because behaviour is drawn from parametric distributions, the normal population is almost certainly more homogeneous than a real workforce, where team-level, seasonal and project-driven variation would widen the normal class and depress precision at every $k$. The absolute figures should therefore be read as an upper envelope; the \emph{shape} of the tradeoff, which is the actual claim, rests only on the weaker assumption that insider signal is carried by aggregate rates \cite{homoliak2019,glasser2013}.
+
+\noindent\textbf{Internal validity: design of the anonymisation.} Global recoding over four QIDs with a $5\%$ suppression budget is one design among many, and a different QID set, hierarchy or budget would shift the curve. The hierarchies are hand-designed rather than learned, so the lattice search finds the cheapest configuration \emph{within a design choice} rather than the globally optimal generalisation, and local recoding \cite{xu2006} could reduce loss further.
+
+\noindent\textbf{External validity: one detector, one dataset.} The Isolation Forest is, by construction, the detector family most favourable to the finding, since it consumes aggregate features exclusively. A sequence model reading event order and exact inter-arrival times would have far more to lose from timestamp generalisation, so the result should not be assumed to transfer without testing on other detectors and on the CERT corpus \cite{glasser2013}.
+
+\noindent\textbf{Statistical limitation: single seeded run.} Each configuration comes from one seeded run rather than repeated trials with confidence intervals. With only 25 insiders, one additional miss moves recall by four percentage points, so differences of that order between adjacent $k$ values sit within plausible run-to-run noise. The monotone trend across the full range is robust; the fine ranking of neighbouring configurations is not.
+
+\noindent\textbf{Scope limitation: threat and privacy models.} $k$-anonymity bounds re-identification by QID linkage and no other risk, so attribute disclosure within a homogeneous class, and the inference and linkability risks emphasised by the Article~29 Working Party \cite{wp29anon2014}, remain outside the guarantee. Negligent and compromised insiders are excluded, and the batch, at-rest design says nothing about real-time streaming detection.
+
+\noindent\textbf{Evaluation limitation: fixed operating point.} All configurations share a fixed $5\%$ contamination threshold, which is the main cause of the apparent F1 decline and which, as shown in Section~3.5, forces precision, recall and F1 to coincide. That threshold is also set to the true insider prevalence, which a real deployment would not know in advance. Using the same value everywhere does not bias the comparison across $k$, which is the object of study, but the F1 figures are a conservative lower bound for a tuned deployment while the absolute precision and recall are an optimistic bound rather than an operational forecast \cite{sommer2010}.
+
+\subsection{Generalisability and the choice of privacy technology}
+\label{sec:generalis}
+Although the experiment uses one synthetic dataset and one detector, the mechanism behind the central finding is general: any detector that, like the Isolation Forest, consumes per-entity aggregate features rather than exact event attributes should inherit the same robustness of ranking under anonymisation. The magnitude of the tradeoff will vary with how much insider signal is concentrated in rare quasi-identifier combinations, so an institution whose insiders rely on removable media, an aggregate channel, might see smaller utility loss than one whose insiders depend on rare specific resources. The framework itself, namely anonymise to a verified $k$, re-detect on the anonymised view, and report both privacy and utility, is dataset- and detector-agnostic.
+
+The results also bear on whether $k$-anonymity was the right mechanism. Its principal weakness, attribute disclosure, is real: if every member of an equivalence class shares the same sensitive value, an adversary learns it without re-identifying anyone, which is why layering $\ell$-diversity or $t$-closeness is recommended for any real deployment. Against this it has two advantages the results bear out. It preserves truthful, per-record data, which is why the anomaly structure and hence the AUC survive so well, and it yields a single legible parameter that maps onto a compliance narrative, which a noise-based mechanism does not. The preservation of ranking quality is therefore a finding about $k$-anonymity specifically: it is the truthfulness of the generalised records, not merely their coarseness, that keeps detection viable.
+
+\subsection{Contribution relative to prior work}
+Prior anonymisation research \cite{sweeney2002,ldiversity2007,fung2010} evaluates privacy against re-identification on static microdata; prior insider-detection research \cite{homoliak2019,yuan2021,tuor2017} evaluates detection on raw data. This dissertation closes the loop between them: ranking-based insider detection proves substantially more robust to $k$-anonymisation than re-identification risk is, which reframes the tradeoff from a zero-sum conflict into a tractable tuning problem.
+
+% ===================================================================
+\section{Conclusion and Future Work}
+% ===================================================================
+This dissertation set out to determine at what level of anonymisation an audit log becomes defensible under the GDPR, and what that costs in insider-threat detection. Building an end-to-end pipeline over a purpose-built financial-sector dataset, we established a strong raw baseline with an F1 of $0.88$ and an AUC of $0.995$, implemented and formally verified a $k$-anonymity generalisation module at $k\in\{2,5,10,20\}$, and measured the full tradeoff. The evidence supports a clear and somewhat optimistic answer: effective detection and provable anonymity coexist. Ranking quality remains above $0.95$ AUC even at $k=20$, thresholded F1 degrades only gracefully, and $k=10$ emerges as a sweet spot delivering meaningful GDPR-aligned anonymity at negligible utility cost. The practical implication is concrete: financial institutions need not choose between monitoring for insider threats and respecting workforce privacy, since they can select an anonymity level as an explicit, defensible parameter and retain most of their detective power.
+
+Returning to the research question, the study gives it a quantified answer. Anonymisation becomes GDPR-defensible in a meaningful sense at $k$ between five and ten, where direct identifiers and exact timestamps are removed and every record hides in a class of at least that size, and the cost of reaching $k=10$ is a fall in F1 from $0.88$ to $0.76$ with AUC essentially unchanged at $0.989$. Put the other way round, the price of provable, moderate anonymity is close to nothing in a rank-and-review workflow, and being able to state that price as a number is itself part of the contribution.
+
+All four contributions claimed in Section~1 are discharged: the pipeline and interactive tool constitute the \emph{constructive artefact}; Table~\ref{tab:tradeoff} and Figure~\ref{fig:tradeoff} are the \emph{empirical tradeoff characterisation}; Table~\ref{tab:gdpr} is the \emph{GDPR mapping} that converts a legal question into a reviewable engineering parameter; and the \emph{dataset generator} embeds subtle insiders alongside legitimate-outlier personas, carrying the transferable methodological lesson that the difficulty of the underlying task is not incidental to a privacy and utility result but constitutive of it.
+
+Two findings generalise beyond the specific numbers. The first is the divergence between AUC and F1. Reporting only the thresholded metric would have supported the pessimistic conclusion that anonymisation costs sixteen points of performance, whereas the near-flat AUC shows the ranking is substantially intact and most of the apparent loss is a thresholding artefact. Since insider triage is a rank-and-review workflow rather than an automated block, this is the difference between a result that discourages privacy engineering and one that enables it, and the caution applies to any evaluation of a privacy mechanism against a rare-event detector. The second is the mechanism behind that robustness: aggregate behavioural rates are statistics over many events, perturbed only weakly by generalising the categorical attributes of individual events, whereas linkability, which is what a re-identification attack consumes, is destroyed by the same operation. Privacy and utility draw on different properties of the data, which is why they are not the zero-sum pair the framing assumes.
+
+The claim is nonetheless bounded. The evidence comes from one synthetic dataset, one detector family and one privacy model, evaluated at a fixed operating point from a single seeded run, and Section~\ref{sec:limitations} sets out where each choice could move the result. What the study establishes firmly is the existence and shape of a workable middle path; its exact position for a given institution remains an empirical exercise on that institution's own data.
+
+\subsection{Future work}
+Future work follows directly from those limitations, and is set out below in descending order of how much it would strengthen the central claim.
+
+\noindent\textbf{Validation beyond the synthetic corpus.} The highest priority is replication on the CERT insider-threat corpus \cite{glasser2013} and, ideally, on a real institutional log under a data-processing agreement. This is the only way to test the construct-validity limitation directly, since it substitutes an independently generated, more heterogeneous normal population for the parametric one used here. The concrete expectation, which the experiment would confirm or refute, is that absolute precision falls at every $k$ while the \emph{shape} of the tradeoff curve is preserved; a divergence in shape rather than level would materially weaken the claim and would be the most informative negative result available.
+
+\noindent\textbf{Detector diversity, especially sequence models.} The AUC-robustness finding should be re-tested with an autoencoder, a one-class SVM and, most importantly, a sequence model such as an LSTM or transformer over the event stream. This is the sharpest available test, because a sequence model consumes event order and inter-arrival times and so has far more to lose from timestamp generalisation than an aggregate-feature detector. If ranking quality proved robust there too, the finding would generalise well beyond the design studied here; if not, the recommendation becomes detector-conditional, itself a useful result for a firm choosing a detection stack.
+
+\noindent\textbf{Stronger privacy models.} Layering $\ell$-diversity \cite{ldiversity2007} or $t$-closeness \cite{tcloseness2007} over the existing equivalence classes would bound attribute as well as identity disclosure, closing the main acknowledged gap in the guarantee. Because both operate on the class structure the module already computes, the extension is architecturally cheap; the interesting question is how much extra information loss the constraint costs at a fixed $k$, and whether utility degrades faster than under $k$-anonymity alone. A complementary direction is a direct comparison against a differentially private treatment of the same features \cite{dwork2014}, which Section~2.6 predicts would damage the rare-event signal considerably more, quantifying a tradeoff currently argued only on principle.
+
+\noindent\textbf{Reducing information loss and recalibrating the operating point.} Replacing global with utility-based local recoding \cite{xu2006} should achieve the same verified $k$ at lower NCP, and would test whether the detection utility recovered tracks the syntactic loss avoided, given that the two were shown here to be related but not interchangeable. Independently, per-configuration threshold recalibration, run across repeated seeds with reported confidence intervals, would both recover the F1 lost to distribution compression and address the single-run statistical limitation, converting the qualitative claim that most of the F1 decline is a thresholding artefact into a measured one.
+
+\noindent\textbf{Operational and regulatory extension.} Two further steps would move the work towards deployment. The first is a streaming variant in which anonymisation sits on the latency path of a real-time detector, raising questions the batch design avoids entirely, notably how to form equivalence classes over an unbounded stream and how much detection delay the guarantee costs. The second is pseudonym lifecycle management, namely salt rotation between windows and separated salt custody, which Section~\ref{sec:gdpr} identifies as the single change that would most strengthen the Recital~26 argument; how much cross-window detective power such rotation sacrifices is an open and practically important question.
+
+\noindent Each step is modest and well-scoped on the pipeline established here. Together they would move the central claim from a demonstrated possibility to a calibrated engineering guideline, which is what a regulated firm would need before setting $k$ in production.
+
+% ===================================================================
+\begin{multicols}{2}
+\begin{thebibliography}{99}
+\footnotesize\linespread{0.90}\selectfont
+\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+\bibitem{homoliak2019} Ivan Homoliak, Flavio Toffalini, Juan Guarnizo, Yuval Elovici, and Mart\'in Ochoa. 2019. Insight into Insiders and IT: A Survey of Insider Threat Taxonomies, Analysis, Modeling, and Countermeasures. \textit{ACM Computing Surveys} 52, 2 (2019), 1--40.
+\bibitem{salem2008} Malek Ben Salem, Shlomo Hershkop, and Salvatore J. Stolfo. 2008. A Survey of Insider Attack Detection Research. In \textit{Insider Attack and Cyber Security}. Springer, 69--90.
+\bibitem{liu2018} Liu Liu, Olivier De Vel, Qing-Long Han, Jun Zhang, and Yang Xiang. 2018. Detecting and Preventing Cyber Insider Threats: A Survey. \textit{IEEE Communications Surveys \& Tutorials} 20, 2 (2018), 1397--1417.
+\bibitem{chandola2009} Varun Chandola, Arindam Banerjee, and Vipin Kumar. 2009. Anomaly Detection: A Survey. \textit{ACM Computing Surveys} 41, 3 (2009), 1--58.
+\bibitem{tuor2017} Aaron Tuor, Samuel Kaplan, Brian Hutchinson, Nicole Nichols, and Sean Robinson. 2017. Deep Learning for Unsupervised Insider Threat Detection in Structured Cybersecurity Data Streams. In \textit{AAAI Workshop on Artificial Intelligence for Cyber Security}.
+\bibitem{legg2017} Philip A. Legg, Oliver Buckley, Michael Goldsmith, and Sadie Creese. 2017. Automated Insider Threat Detection System Using User and Role-Based Profile Assessment. \textit{IEEE Systems Journal} 11, 2 (2017), 503--512.
+\bibitem{isoforest2008} Fei Tony Liu, Kai Ming Ting, and Zhi-Hua Zhou. 2008. Isolation Forest. In \textit{Proceedings of the IEEE International Conference on Data Mining (ICDM)}. 413--422.
+\bibitem{sommer2010} Robin Sommer and Vern Paxson. 2010. Outside the Closed World: On Using Machine Learning for Network Intrusion Detection. In \textit{Proceedings of the IEEE Symposium on Security and Privacy}. 305--316.
+\bibitem{samarati2001} Pierangela Samarati. 2001. Protecting Respondents' Identities in Microdata Release. \textit{IEEE Transactions on Knowledge and Data Engineering} 13, 6 (2001), 1010--1027.
+\bibitem{sweeney2002} Latanya Sweeney. 2002. k-Anonymity: A Model for Protecting Privacy. \textit{International Journal of Uncertainty, Fuzziness and Knowledge-Based Systems} 10, 5 (2002), 557--570.
+\bibitem{lefevre2005} Kristen LeFevre, David J. DeWitt, and Raghu Ramakrishnan. 2005. Incognito: Efficient Full-Domain K-Anonymity. In \textit{Proceedings of the ACM SIGMOD International Conference on Management of Data}. 49--60.
+\bibitem{ldiversity2007} Ashwin Machanavajjhala, Daniel Kifer, Johannes Gehrke, and Muthuramakrishnan Venkitasubramaniam. 2007. l-Diversity: Privacy Beyond k-Anonymity. \textit{ACM Transactions on Knowledge Discovery from Data} 1, 1 (2007), 3.
+\bibitem{tcloseness2007} Ninghui Li, Tiancheng Li, and Suresh Venkatasubramanian. 2007. t-Closeness: Privacy Beyond k-Anonymity and l-Diversity. In \textit{Proceedings of the IEEE International Conference on Data Engineering (ICDE)}. 106--115.
+\bibitem{fung2010} Benjamin C. M. Fung, Ke Wang, Rui Chen, and Philip S. Yu. 2010. Privacy-Preserving Data Publishing: A Survey of Recent Developments. \textit{ACM Computing Surveys} 42, 4 (2010), 1--53.
+\bibitem{xu2006} Jian Xu, Wei Wang, Jian Pei, Xiaoyuan Wang, Baile Shi, and Ada Wai-Chee Fu. 2006. Utility-Based Anonymization Using Local Recoding. In \textit{Proceedings of the ACM SIGKDD International Conference on Knowledge Discovery and Data Mining}. 785--790.
+\bibitem{wagner2018} Isabel Wagner and David Eckhoff. 2018. Technical Privacy Metrics: A Systematic Survey. \textit{ACM Computing Surveys} 51, 3 (2018), 1--38.
+\bibitem{sokolova2009} Marina Sokolova and Guy Lapalme. 2009. A Systematic Analysis of Performance Measures for Classification Tasks. \textit{Information Processing \& Management} 45, 4 (2009), 427--437.
+\bibitem{glasser2013} Joshua Glasser and Brian Lindauer. 2013. Bridging the Gap: A Pragmatic Approach to Generating Insider Threat Data. In \textit{Proceedings of the IEEE Security and Privacy Workshops}. 98--104.
+\bibitem{cavoukian2011} Ann Cavoukian. 2011. \textit{Privacy by Design: The 7 Foundational Principles}. Information and Privacy Commissioner of Ontario, Canada.
+\bibitem{voigt2017} Paul Voigt and Axel von dem Bussche. 2017. \textit{The EU General Data Protection Regulation (GDPR): A Practical Guide}. Springer International Publishing.
+\bibitem{tankard2016} Colin Tankard. 2016. What the GDPR Means for Businesses. \textit{Network Security} 2016, 6 (2016), 5--8.
+\bibitem{yuan2021} Shuhan Yuan and Xintao Wu. 2021. Deep Learning for Insider Threat Detection: Review, Challenges and Opportunities. \textit{Computers \& Security} 104 (2021), 102221.
+\bibitem{dwork2014} Cynthia Dwork and Aaron Roth. 2014. The Algorithmic Foundations of Differential Privacy. \textit{Foundations and Trends in Theoretical Computer Science} 9, 3--4 (2014), 211--407.
+\bibitem{wp29anon2014} Article 29 Data Protection Working Party. 2014. \textit{Opinion 05/2014 on Anonymisation Techniques} (WP216). European Commission, Brussels.
+\bibitem{ico2023} Information Commissioner's Office. 2023. \textit{Employment Practices and Data Protection: Monitoring Workers}. ICO, Wilmslow, UK.
+\end{thebibliography}
+\end{multicols}
+
+\end{document}

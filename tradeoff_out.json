@@ -1,0 +1,20 @@
+[
+  {
+    "k": 2,
+    "achieved_k": 2,
+    "levels": "{'identity': 0, 'time': 0, 'resource': 0, 'action': 0}",
+    "ncp": 0.0,
+    "supp": 0.0288,
+    "n_suppressed": 24515,
+    "prec": 0.8,
+    "rec": 0.8,
+    "f1": 0.8,
+    "auc": 0.9931,
+    "n_classes": 55684,
+    "mean_cls": 14.8,
+    "n_entities": 500,
+    "tp": 20,
+    "fp": 5,
+    "fn": 5
+  }
+]
